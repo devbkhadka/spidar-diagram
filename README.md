@@ -3,4 +3,7 @@ Custom diagram to compare different metrics with its standards or average. Built
 
 
 ### Demo
+
+https://devbkhadka.github.io/spidar-diagram/
+
 ![Spidar Diagram Demo](images/spidar-diagram.gif)
