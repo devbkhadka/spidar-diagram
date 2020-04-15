@@ -1,0 +1,186 @@
+﻿<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head runat="server">
+    <title></title>
+    <style type="text/css">
+        button {
+            padding: 8px;
+            border-radius: 4px;
+            background: cyan;
+            font-size: medium;
+            margin-bottom: 16px;
+        }
+    </style>
+    <script type="text/javascript" src="scripts/SpiderDiagram.js"></script>
+    <script type="text/javascript" src="scripts/excanvas.js"></script>
+    <script type="text/javascript" src="scripts/jquery-1.4.1.min.js"></script>
+
+    <script type="text/javascript" language="javascript">
+
+        var spiderDiag;
+        var segCount = 5;
+        var segNames;
+        var curValues;
+        var avgValues;
+        var showRandom = true;
+        var showMaster = true;
+        var minRate = 1;
+        var maxRate = 5;
+        var gridSeperation = 0.5;
+
+        function segNoChanged(sender) {
+            var html =
+                "<th>Seg Name</th>" +
+                " <th>Cur user value</th>" +
+                "<th>Avg value</th>";
+
+            var mainTable = $("<table/>");
+            mainTable.append("<tr/>").html(html);
+            segCount = sender.value;
+            segNames = new Array();
+            curValues = new Array();
+            avgValues = new Array();
+            for (var i = 0; i < segCount; i++) {
+                segNames.push("segment name" + (i + 1));
+                curValues.push(1);
+                avgValues.push(1);
+            }
+            var inputTypes = new Array("segName", "value", "avgValue");
+            for (var i = 0; i < segCount; i++) {
+                var newRow = $("<tr/>");
+                for (var j = 0; j < inputTypes.length; j++) {
+                    var col = $("<td/>")
+                    var textBox = $("<input/>");
+                    textBox.data({ type: inputTypes[j], index: i });
+                    textBox.blur(segValueChanged);
+                    col.append(textBox);
+                    newRow.append(col);
+                }
+                mainTable.append(newRow);
+
+            }
+            $("#inputs").empty();
+            $("#inputs").append(mainTable);
+            spiderDiag = new SpiderDiagram(segNames, minRate, maxRate, gridSeperation, "myCanvas");
+            spiderDiag.drawUserValues(curValues, showMaster ? avgValues : null);
+        }
+        function segValueChanged(sender) {
+            var type = $(this).data().type;
+            var index = $(this).data().index;
+            if (type == "segName") {
+                segNames[index] = this.value;
+                spiderDiag = new SpiderDiagram(segNames, minRate, maxRate, gridSeperation, "myCanvas");
+            }
+            else if (type == "value") {
+                curValues[index] = this.value * 1;
+
+            }
+            else if (type == "avgValue") {
+                avgValues[index] = this.value * 1;
+            }
+            spiderDiag.drawUserValues(curValues, showMaster ? avgValues : null);
+        }
+        function minMaxChanged(sender, minMax) {
+            if (minMax == 1) {
+                minRate = sender.value * 1;
+            }
+            else if (minMax == 2) {
+                maxRate = sender.value * 1;
+            }
+            else if (minMax == 3) {
+                gridSeperation = sender.value * 1;
+            }
+            else {
+                showMaster = sender.checked;
+            }
+            spiderDiag = new SpiderDiagram(segNames, minRate, maxRate, gridSeperation, "myCanvas");
+            spiderDiag.drawUserValues(curValues, showMaster ? avgValues : null);
+        }
+        window.onload = function () {
+
+
+            if (showRandom = true) {
+                segCount = Math.floor(Math.random() * 12) + 2;
+            }
+            var segments = new Array(segCount);
+            var initValues = new Array(segCount);
+            for (var i = 0; i < segCount; i++) {
+                segments[i] = "Segment with very very long name" + (i + 1);
+                initValues[i] = 1;
+            }
+
+            // spiderDiag = new SpiderDiagram(new Array("seg1 long text", "a seg2 also has a very long legend", "lseg3f has a very long legend", "seg4", "seg5 very long", "seg6", "seg7"), 0, 10, "myCanvas");
+            // spiderDiag.drawUserValues(new Array(1, 1, 1, 1, 1, 1, 1));
+
+            spiderDiag = new SpiderDiagram(segments, minRate, maxRate, gridSeperation, "myCanvas");
+            spiderDiag.drawUserValues(initValues);
+
+
+        }
+
+
+        function showRandomData() {
+            //spiderDiag.drawUserValues(new Array(1, 1, 4, 3, 2, 5, 3));
+
+            var values = new Array(segCount);
+            var avgValues = new Array(segCount);
+            for (var i = 0; i < segCount; i++) {
+                values[i] = Math.round(Math.random() * (maxRate - minRate)) + minRate;
+                avgValues[i] = Math.round(Math.random() * (maxRate - minRate)) + minRate;
+            }
+
+            //if (!showMaster) { avgValues = null; }
+            spiderDiag.drawUserValues(values, showMaster ? avgValues : null);
+            return false;
+        }
+
+
+
+    </script>
+
+</head>
+
+<body>
+    <div>
+        <h2>Spider Diagram </h2>
+        <div style="float:right">
+            <canvas id="myCanvas" height="600" width="600"> </canvas>
+        </div>
+        <table>
+            <tr>
+                <button onclick="showRandomData()">Show Random Data</button>
+            </tr>
+            <tr>
+                <td>No. of segments</td>
+                <td><input id="segNo" onblur="segNoChanged(this)" /></td>
+            </tr>
+            <tr>
+                <td>Min rate value</td>
+                <td><input id="minRate" onblur="minMaxChanged(this,1)" /></td>
+            </tr>
+            <tr>
+                <td>Max rate value</td>
+                <td><input id="maxRate" onblur="minMaxChanged(this,2)" /></td>
+            </tr>
+            <tr>
+                <td>Grid seperation</td>
+                <td><input id="gridSepration" onblur="minMaxChanged(this,3)" /></td>
+            </tr>
+            <tr>
+                <td>Show avg values also</td>
+                <td><input type="checkbox" checked="checked" id="Text1" onchange="minMaxChanged(this,4)" /></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <hr />
+                </td>
+            </tr>
+        </table>
+        <div id="inputs"></div>
+    </div>
+</body>
+
+</html>
